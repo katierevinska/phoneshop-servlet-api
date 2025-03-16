@@ -1,5 +1,6 @@
 package com.es.phoneshop.web;
 
+import com.es.phoneshop.model.product.Product;
 import com.es.phoneshop.dao.ProductDao;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
@@ -12,13 +13,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ProductListPageServletTest {
+class ProductDetailsPageServletTest {
     @Mock
     private HttpServletRequest request;
     @Mock
@@ -28,7 +30,7 @@ class ProductListPageServletTest {
     @Mock
     private ProductDao productDao;
 
-    private final ProductListPageServlet servlet = new ProductListPageServlet();
+    private final ProductDetailsPageServlet servlet = new ProductDetailsPageServlet();
 
     @BeforeEach
     public void setup() throws ServletException {
@@ -38,34 +40,25 @@ class ProductListPageServletTest {
     }
 
     @Test
-    void testDoGetProcess() throws ServletException, IOException {
+    void testDoGetNotExistsProduct() throws ServletException, IOException {
+        when(request.getPathInfo()).thenReturn("/29");
+        when(productDao.getProduct(29L)).thenReturn(Optional.empty());
+
         servlet.doGet(request, response);
+        verify(request).getRequestDispatcher("/WEB-INF/pages/notFoundProduct.jsp");
 
         verify(requestDispatcher).forward(request, response);
-        verify(request).setAttribute(eq("products"), any());
     }
 
     @Test
-    void testDoGetNotNullFindProductsParameters() throws ServletException, IOException {
-        when(request.getParameter("query")).thenReturn("phone1");
-        when(request.getParameter("sort")).thenReturn("price");
-        when(request.getParameter("order")).thenReturn("asc");
+    void testDoGetNotExistProduct() throws ServletException, IOException {
+        when(request.getPathInfo()).thenReturn("/122");
+        when(productDao.getProduct(122L)).thenReturn(Optional.of(new Product()));
 
         servlet.doGet(request, response);
 
-        verify(productDao).findProducts(
-                "phone1", "price", "asc");
-    }
-
-    @Test
-    void testDoGetNullFindProductsParameters() throws ServletException, IOException {
-        when(request.getParameter("query")).thenReturn(null);
-        when(request.getParameter("sort")).thenReturn(null);
-        when(request.getParameter("order")).thenReturn(null);
-
-        servlet.doGet(request, response);
-
-        verify(productDao).findProducts(
-                null, null, null);
+        verify(request).setAttribute(eq("product"), any());
+        verify(request).getRequestDispatcher("/WEB-INF/pages/productDetails.jsp");
+        verify(productDao).getProduct(122L);
     }
 }

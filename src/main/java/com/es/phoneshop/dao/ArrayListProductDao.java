@@ -1,8 +1,9 @@
-package com.es.phoneshop.model.product;
+package com.es.phoneshop.dao;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import com.es.phoneshop.model.product.*;
+import com.es.phoneshop.utils.ProductSearchUtils;
+
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -14,20 +15,16 @@ public class ArrayListProductDao implements ProductDao {
     private final Lock readProductsLock = rwProductsLock.readLock();
     private final Lock writeProductsLock = rwProductsLock.writeLock();
     private long idCounter;
+    private final Map<SortField, Comparator<SearchResult>> sortFieldComparatorMap = Map.ofEntries(
+            Map.entry(SortField.DESCRIPTION, Comparator.comparing(sr -> sr.getProduct().getDescription())),
+            Map.entry(SortField.PRICE, Comparator.comparing(sr -> sr.getProduct().getPrice()))
+    );
 
     private ArrayListProductDao() {
     }
 
     public static ArrayListProductDao getInstance() {
         return instance;
-    }
-
-    public void setProductsList(ArrayList<Product> products) {
-        this.products = products;
-    }
-
-    public ArrayList<Product> getProductsList() {
-        return products;
     }
 
     @Override
@@ -39,18 +36,31 @@ public class ArrayListProductDao implements ProductDao {
         try {
             return products.stream()
                     .filter(product -> id.equals(product.getId()))
-                    .findAny();
+                    .findAny()
+                    .map(Product::clone);
         } finally {
             readProductsLock.unlock();
         }
     }
 
     @Override
-    public List<Product> findProducts() {
+    public List<Product> findProducts(
+            String query, String sortFieldStr, String sortOrderStr
+    ) {
         readProductsLock.lock();
         try {
+            Comparator<SearchResult> sortedComparator;
+            if (query == null || query.isEmpty()) {
+                sortedComparator = getComparatorBySortFieldStr(sortFieldStr, sortOrderStr);
+            } else {
+                sortedComparator = Comparator.comparing(SearchResult::getSearchCoefficient);
+            }
+
             return products.stream()
                     .filter(product -> product.getPrice() != null && product.getStock() > 0)
+                    .map(product -> ProductSearchUtils.createSearchResult(product, query))
+                    .sorted(sortedComparator)
+                    .map(SearchResult::getProduct)
                     .toList();
         } finally {
             readProductsLock.unlock();
@@ -94,6 +104,23 @@ public class ArrayListProductDao implements ProductDao {
         } finally {
             writeProductsLock.unlock();
         }
+    }
+
+    private Comparator<SearchResult> getComparatorBySortFieldStr(String sortFieldStr, String sortOrderStr) {
+        if (sortFieldStr == null) {
+            return Comparator.comparing(pr -> 1);
+        }
+        SortField sortField = SortField.valueOf(sortFieldStr.toUpperCase());
+        Comparator<SearchResult> comparator = sortFieldComparatorMap.get(sortField);
+
+        if (sortOrderStr != null && SortOrder.valueOf(sortOrderStr.toUpperCase()) == SortOrder.DESC) {
+            return comparator.reversed();
+        }
+        return comparator;
+    }
+
+    public void setProductsList(ArrayList<Product> products) {
+        this.products = products;
     }
 
     private long saveProduct(Product product) {

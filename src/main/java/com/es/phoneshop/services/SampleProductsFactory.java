@@ -1,7 +1,6 @@
 package com.es.phoneshop.services;
 
 import com.es.phoneshop.model.product.Product;
-import com.es.phoneshop.model.product.ProductDao;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
