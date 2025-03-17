@@ -1,5 +1,6 @@
 package com.es.phoneshop.model.product;
 
+import com.es.phoneshop.dao.ArrayListProductDao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,32 +36,60 @@ class ArrayListProductDaoTest {
     }
 
     @Test
-    void testFindProductsNoResults() {
+    void testFindProductsEmptyResults() {
         when(products.stream()).thenReturn(Stream.of(product1, product2));
 
         when(product1.getPrice()).thenReturn(null);
+        when(product2.getPrice()).thenReturn(null);
 
-        when(product2.getPrice()).thenReturn(BigDecimal.ONE);
-        when(product2.getStock()).thenReturn(0);
+        List<Product> result = testInstance.findProducts(
+                "smt", SortField.DESCRIPTION.toString(), SortOrder.DESC.toString());
 
-        List<Product> result = testInstance.findProducts();
-
-        assertTrue(result.isEmpty());
+        assertEquals(0, result.size());
     }
 
     @Test
-    void testFindProductsNotEmptyResults() {
+    void testFindProductsPriceSorting() {
+        when(product1.getPrice()).thenReturn(BigDecimal.valueOf(20));
+        when(product1.getStock()).thenReturn(5);
+
+        when(product2.getPrice()).thenReturn(BigDecimal.valueOf(10));
+        when(product2.getStock()).thenReturn(10);
+
         when(products.stream()).thenReturn(Stream.of(product1, product2));
 
-        when(product1.getPrice()).thenReturn(null);
+        List<Product> result = testInstance.findProducts(
+                "",
+                SortField.PRICE.toString(),
+                SortOrder.ASC.toString()
+        );
 
-        when(product2.getPrice()).thenReturn(BigDecimal.ONE);
-        when(product2.getStock()).thenReturn(1);
-
-        List<Product> result = testInstance.findProducts();
-
-        assertEquals(1, result.size());
+        assertEquals(2, result.size());
         assertEquals(product2, result.get(0));
+        assertEquals(product1, result.get(1));
+    }
+
+    @Test
+    void testFindProductsDescriptionSorting() {
+        when(product1.getDescription()).thenReturn("Apple iPhone 14");
+        when(product1.getPrice()).thenReturn(BigDecimal.valueOf(10));
+        when(product1.getStock()).thenReturn(5);
+
+        when(product2.getDescription()).thenReturn("Samsung Galaxy S22");
+        when(product2.getPrice()).thenReturn(BigDecimal.valueOf(20));
+        when(product2.getStock()).thenReturn(10);
+
+        when(products.stream()).thenReturn(Stream.of(product1, product2));
+
+        List<Product> result = testInstance.findProducts(
+                null,
+                SortField.DESCRIPTION.toString(),
+                SortOrder.DESC.toString()
+        );
+
+        assertEquals(2, result.size());
+        assertEquals(product2, result.get(0));
+        assertEquals(product1, result.get(1));
     }
 
     @Test
@@ -84,6 +113,7 @@ class ArrayListProductDaoTest {
     void testGetProductExistId() {
         when(products.stream()).thenReturn(Stream.of(product1, product2));
         when(product1.getId()).thenReturn(1L);
+        when(product1.clone()).thenReturn(product1);
 
         Optional<Product> result = testInstance.getProduct(1L);
 
@@ -140,6 +170,7 @@ class ArrayListProductDaoTest {
 
         when(product1.getId()).thenReturn(1L);
         when(product2.getId()).thenReturn(1L);
+        when(product1.clone()).thenReturn(product1);
 
         testInstance.save(product2);
 

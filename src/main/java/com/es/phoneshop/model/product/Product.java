@@ -1,9 +1,10 @@
 package com.es.phoneshop.model.product;
 
 import java.math.BigDecimal;
-import java.util.Currency;
+import java.time.Instant;
+import java.util.*;
 
-public class Product {
+public class Product implements Cloneable {
     private Long id;
     private String code;
     private String description;
@@ -17,6 +18,7 @@ public class Product {
     private Currency currency;
     private int stock;
     private String imageUrl;
+    private ArrayList<PriceHistoryInfo> priceHistory;
 
     public Product() {
     }
@@ -38,6 +40,8 @@ public class Product {
         this.currency = currency;
         this.stock = stock;
         this.imageUrl = imageUrl;
+        priceHistory = new ArrayList<>();
+        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
     }
 
     public Long getId() {
@@ -70,6 +74,7 @@ public class Product {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
     }
 
     public Currency getCurrency() {
@@ -78,6 +83,7 @@ public class Product {
 
     public void setCurrency(Currency currency) {
         this.currency = currency;
+        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
     }
 
     public int getStock() {
@@ -94,5 +100,24 @@ public class Product {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public List<PriceHistoryInfo> getPriceHistory() {
+        return priceHistory;
+    }
+
+    public void setPriceHistory(List<PriceHistoryInfo> priceHistory) {
+        this.priceHistory = new ArrayList<>(priceHistory);
+    }
+
+    @Override
+    public Product clone() {
+        priceHistory = new ArrayList<>();
+        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
+        Product product = new Product(
+                this.id, this.code, this.description,
+                this.price, this.currency, this.stock, this.imageUrl);
+        product.setPriceHistory(this.priceHistory.stream().map(PriceHistoryInfo::clone).toList());
+        return product;
     }
 }
