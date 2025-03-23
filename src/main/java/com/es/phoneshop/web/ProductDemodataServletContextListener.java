@@ -2,7 +2,7 @@ package com.es.phoneshop.web;
 
 import com.es.phoneshop.dao.ArrayListProductDao;
 import com.es.phoneshop.dao.ProductDao;
-import com.es.phoneshop.services.SampleProductsFactory;
+import com.es.phoneshop.services.product.SampleProductsFactory;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 

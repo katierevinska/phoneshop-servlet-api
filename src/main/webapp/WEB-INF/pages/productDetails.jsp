@@ -4,9 +4,24 @@
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 
 <tags:master pageTitle="Product Details">
+<p>
+    Cart:
+</p>
+<p>${cart}</p>
+ <c:if test="${not empty param.message}">
+    <div class="success">
+        ${param.message}
+    </div>
+</c:if>
+<c:if test="${not empty param.error}">
+    <div class="error">
+        There was an error adding to the cart
+    </div>
+</c:if>
     <div>
         <h2>Product Details</h2>
         <p>Here you can see details of the chosen product:</p>
+        <form method="post">
         <table>
             <tr>
                 <td>
@@ -40,7 +55,25 @@
                     <fmt:formatNumber value="${product.price}" type="currency" currencySymbol="${product.currency.symbol}" />
                 </td>
             </tr>
+             <tr>
+                <td>
+                    <h5>Quantity:</h5>
+                </td>
+                <c:set var="quantityTmp" value="${param.quantity != null && !param.quantity.isEmpty() ? param.quantity : param.productQuantity}" />
+                <c:set var="finalQuantity" value="${quantityTmp != null && !quantityTmp.isEmpty() ? quantityTmp : '1'}" />
+
+                <td class="quantity">
+                    <input name="quantity" value="${finalQuantity}">
+                    <c:if test="${not empty param.error}">
+                       <div class="error">
+                          ${param.error}
+                       </div>
+                    </c:if>
+                </td>
+             </tr>
         </table>
+        <button>Add to cart</button>
+        </form>
 
         <img src="${product.imageUrl}" alt="${product.description}" />
     </div>

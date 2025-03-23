@@ -1,10 +1,13 @@
 package com.es.phoneshop.web;
 
 import com.es.phoneshop.dao.ProductDao;
+import com.es.phoneshop.model.product.RecentViewProducts;
+import com.es.phoneshop.services.product.RecentViewProductsService;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +30,10 @@ class ProductListPageServletTest {
     private RequestDispatcher requestDispatcher;
     @Mock
     private ProductDao productDao;
+    @Mock
+    private RecentViewProductsService recentViewProductsService;
+    @Mock
+    private HttpSession httpSession;
 
     private final ProductListPageServlet servlet = new ProductListPageServlet();
 
@@ -34,7 +41,11 @@ class ProductListPageServletTest {
     public void setup() throws ServletException {
         servlet.init();
         servlet.setProductDao(productDao);
+        servlet.setRecentViewProductsService(recentViewProductsService);
+
+        when(request.getSession()).thenReturn(httpSession);
         when(request.getRequestDispatcher(anyString())).thenReturn(requestDispatcher);
+        when(recentViewProductsService.getRecentViewProducts(any())).thenReturn(new RecentViewProducts());
     }
 
     @Test
@@ -43,6 +54,7 @@ class ProductListPageServletTest {
 
         verify(requestDispatcher).forward(request, response);
         verify(request).setAttribute(eq("products"), any());
+        verify(request).setAttribute(eq("recentViewProducts"), any());
     }
 
     @Test

@@ -1,10 +1,11 @@
 package com.es.phoneshop.model.product;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
 
-public class Product implements Cloneable {
+public class Product implements Cloneable, Serializable {
     private Long id;
     private String code;
     private String description;
@@ -18,7 +19,7 @@ public class Product implements Cloneable {
     private Currency currency;
     private int stock;
     private String imageUrl;
-    private ArrayList<PriceHistoryInfo> priceHistory;
+    private transient ArrayList<PriceHistoryInfo> priceHistory;
 
     public Product() {
     }

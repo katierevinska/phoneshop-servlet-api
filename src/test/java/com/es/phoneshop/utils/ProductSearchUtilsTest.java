@@ -1,5 +1,7 @@
-package com.es.phoneshop.model.product;
+package com.es.phoneshop.utils;
 
+import com.es.phoneshop.model.product.Product;
+import com.es.phoneshop.model.product.SearchResult;
 import com.es.phoneshop.utils.ProductSearchUtils;
 import org.junit.jupiter.api.Test;
 
