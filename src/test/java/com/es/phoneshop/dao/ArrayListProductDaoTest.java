@@ -1,6 +1,9 @@
-package com.es.phoneshop.model.product;
+package com.es.phoneshop.dao;
 
 import com.es.phoneshop.dao.ArrayListProductDao;
+import com.es.phoneshop.model.product.Product;
+import com.es.phoneshop.model.product.SortField;
+import com.es.phoneshop.model.product.SortOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

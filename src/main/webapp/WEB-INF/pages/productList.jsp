@@ -3,8 +3,10 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 
-<jsp:useBean id="products" type="java.util.List" scope="request"/>
+<meta http-equiv="refresh" content="5">
 
+<jsp:useBean id="products" type="java.util.List" scope="request"/>
+<jsp:useBean id="recentViewProducts" type="java.util.List" scope="request"/>
 <tags:master pageTitle="Product List">
     <p>Welcome to Expert-Soft training!</p>
 
@@ -59,7 +61,6 @@
             </td>
         </tr>
         </thead>
-
         <c:forEach var="product" items="${products}">
             <tr>
                 <td>
@@ -113,6 +114,20 @@
                 </td>
             </tr>
         </c:forEach>
+    </table>
+    <br />
+    <table>
+        <tr>
+            <c:forEach var="recentViewProduct" items="${recentViewProducts}">
+            <td>
+                <img class="product-tile" src="${recentViewProduct.imageUrl}" /><br />
+                <a href="${pageContext.servletContext.contextPath}/products/${recentViewProduct.id}">
+                   ${recentViewProduct.description}
+                </a><br />
+                <fmt:formatNumber value="${recentViewProduct.price}" type="currency" currencySymbol="${product.currency.symbol}"/>
+            </td>
+            </c:forEach>
+        </tr>
     </table>
 
     <script>
