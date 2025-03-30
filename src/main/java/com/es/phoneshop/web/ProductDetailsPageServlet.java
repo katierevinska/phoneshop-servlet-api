@@ -39,9 +39,9 @@ public class ProductDetailsPageServlet extends HttpServlet {
             HttpServletRequest request, HttpServletResponse response
     ) throws ServletException, IOException {
         long id = Long.parseLong(request.getPathInfo().substring(1));
-        Optional<Product> product = productDao.getProduct(id);
-        product.ifPresentOrElse(
-                p -> handleGetExistsProduct(request, response, p),
+        Optional<Product> productOptional = productDao.getProduct(id);
+        productOptional.ifPresentOrElse(
+                product -> handleGetExistsProduct(request, response, product),
                 () -> handleProductByIdNotExists(request, response, id)
         );
     }
@@ -51,9 +51,9 @@ public class ProductDetailsPageServlet extends HttpServlet {
             HttpServletRequest request, HttpServletResponse response
     ) throws IOException, ServletException {
         long id = Long.parseLong(request.getPathInfo().substring(1));
-        Optional<Product> product = productDao.getProduct(id);
-        product.ifPresentOrElse(
-                p -> handlePostExistsProduct(request, response, p),
+        Optional<Product> productOptional = productDao.getProduct(id);
+        productOptional.ifPresentOrElse(
+                product -> handlePostExistsProduct(request, response, product),
                 () -> handleProductByIdNotExists(request, response, id)
         );
     }
@@ -90,8 +90,7 @@ public class ProductDetailsPageServlet extends HttpServlet {
             return;
         } catch (OutOfStockException e) {
             response.sendRedirect(request.getContextPath() + "/products/" + productId + "?error="
-                    + "out+of+stock,+need+" + e.getRequestedStock()
-                    + "+but+only+" + e.getAvailableStock() + "+is+available&productQuantity=" + quantityStr);
+                    + e.getMessage() + "&productQuantity=" + quantityStr);
 
             return;
         }
