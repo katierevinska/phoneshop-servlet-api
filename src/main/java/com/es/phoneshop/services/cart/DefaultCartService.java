@@ -40,12 +40,42 @@ public class DefaultCartService implements CartService {
         }
         cartLock.lock();
         try {
-            Optional<Product> product = productDao.getProduct(productId);
-            product.ifPresent(
-                    p -> getCartItemById(cart, productId).ifPresentOrElse(
-                            ci -> handleProductExistsInCart(ci, p, quantity),
-                            () -> handleProductNotExistsInCart(cart, p, quantity))
+            Optional<Product> productOptional = productDao.getProduct(productId);
+            productOptional.ifPresent(product -> getCartItemById(cart, productId).ifPresentOrElse(
+                    cartItem -> handleProductExistsInCart(cartItem, product, cartItem.getQuantity() + quantity),
+                    () -> handleProductNotExistsInCart(cart, product, quantity))
             );
+            recalculateTotalQuantity(cart);
+        } finally {
+            cartLock.unlock();
+        }
+    }
+
+    @Override
+    public void update(Cart cart, Long productId, int quantity) throws OutOfStockException {
+        if (productId == null) {
+            return;
+        }
+        cartLock.lock();
+        try {
+            Optional<Product> productOptional = productDao.getProduct(productId);
+            productOptional.ifPresent(
+                    product -> getCartItemById(cart, productId).ifPresentOrElse(
+                            cartItem -> handleProductExistsInCart(cartItem, product, quantity),
+                            () -> handleProductNotExistsInCart(cart, product, quantity))
+            );
+            recalculateTotalQuantity(cart);
+        } finally {
+            cartLock.unlock();
+        }
+    }
+
+    @Override
+    public void delete(Cart cart, Long productId) {
+        cartLock.lock();
+        try {
+            cart.getItems().removeIf(cartItem -> productId.equals(cartItem.getProduct().getId()));
+            recalculateTotalQuantity(cart);
         } finally {
             cartLock.unlock();
         }
@@ -59,11 +89,10 @@ public class DefaultCartService implements CartService {
 
     @SneakyThrows
     private void handleProductExistsInCart(CartItem cartItem, Product product, int quantity) {
-        int totalRequestQuantity = cartItem.getQuantity() + quantity;
-        if (totalRequestQuantity > product.getStock()) {
-            throw new OutOfStockException(product, totalRequestQuantity, product.getStock());
+        if (quantity > product.getStock()) {
+            throw new OutOfStockException(product, quantity, product.getStock());
         }
-        cartItem.setQuantity(totalRequestQuantity);
+        cartItem.setQuantity(quantity);
     }
 
     @SneakyThrows
@@ -72,6 +101,13 @@ public class DefaultCartService implements CartService {
             throw new OutOfStockException(product, quantity, product.getStock());
         }
         cart.getItems().add(new CartItem(product, quantity));
+    }
+
+    private void recalculateTotalQuantity(Cart cart) {
+        int totalQuantity = cart.getItems().stream()
+                .mapToInt(CartItem::getQuantity)
+                .sum();
+        cart.setTotalQuantity(totalQuantity);
     }
 
     public void setProductDao(ProductDao productDao) {

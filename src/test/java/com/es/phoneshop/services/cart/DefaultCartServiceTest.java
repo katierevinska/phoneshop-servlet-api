@@ -113,4 +113,81 @@ class DefaultCartServiceTest {
         assertEquals(6, exception.getRequestedStock());
         assertEquals(product, exception.getProduct());
     }
+
+    @Test
+    void testUpdateProductToCartWhenProductExists() throws OutOfStockException {
+        when(product.getId()).thenReturn(1L);
+        when(product.getStock()).thenReturn(10);
+
+        CartItem cartItem = new CartItem(product, 2);
+        when(cart.getItems()).thenReturn(List.of(cartItem));
+        when(productDao.getProduct(1L)).thenReturn(Optional.of(product));
+
+        cartService.update(cart, 1L, 3);
+
+        assertEquals(3, cartItem.getQuantity());
+    }
+
+    @Test
+    void testUpdateProductToCartWhenProductDoesNotExist() throws OutOfStockException {
+        Cart cart = new Cart();
+        when(productDao.getProduct(1L)).thenReturn(Optional.empty());
+
+        cartService.update(cart, 1L, 3);
+
+        assertTrue(cart.getItems().isEmpty());
+    }
+
+    @Test
+    void testUpdateProductToCartWhenOutOfStock() {
+        when(product.getStock()).thenReturn(2);
+
+        when(productDao.getProduct(1L)).thenReturn(Optional.of(product));
+
+        OutOfStockException exception = assertThrows(OutOfStockException.class, () -> {
+            cartService.update(cart, 1L, 3);
+        });
+        assertEquals(2, exception.getAvailableStock());
+        assertEquals(3, exception.getRequestedStock());
+        assertEquals(product, exception.getProduct());
+    }
+
+    @Test
+    void testUpdateExistingProductToCartWhenOutOfStock() {
+        when(product.getStock()).thenReturn(2);
+        when(product.getId()).thenReturn(1L);
+
+        when(cart.getItems()).thenReturn(List.of(new CartItem(product, 2)));
+        when(productDao.getProduct(1L)).thenReturn(Optional.of(product));
+
+        OutOfStockException exception = assertThrows(OutOfStockException.class, () -> {
+            cartService.update(cart, 1L, 3);
+        });
+
+        assertEquals(2, exception.getAvailableStock());
+        assertEquals(3, exception.getRequestedStock());
+        assertEquals(product, exception.getProduct());
+    }
+
+    @Test
+    void testDeleteProductToCartWhenProductExists() {
+        when(product.getId()).thenReturn(1L);
+        Cart cart = new Cart();
+        cart.getItems().add(new CartItem(product, 2));
+
+        cartService.delete(cart, 1L);
+
+        assertTrue(cart.getItems().isEmpty());
+    }
+
+    @Test
+    void testDeleteProductToCartWhenProductNotExists() {
+        when(product.getId()).thenReturn(1L);
+        Cart cart = new Cart();
+        cart.getItems().add(new CartItem(product, 2));
+
+        cartService.delete(cart, 2L);
+
+        assertEquals(1, cart.getItems().size());
+    }
 }

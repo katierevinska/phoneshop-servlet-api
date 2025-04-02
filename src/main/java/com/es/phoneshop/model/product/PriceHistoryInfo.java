@@ -1,10 +1,11 @@
 package com.es.phoneshop.model.product;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Date;
 
-public class PriceHistoryInfo implements Cloneable {
+public class PriceHistoryInfo implements Cloneable, Serializable {
     private Date dateFrom;
     private BigDecimal price;
     private Currency currency;

@@ -3,8 +3,6 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 
-<meta http-equiv="refresh" content="5">
-
 <jsp:useBean id="products" type="java.util.List" scope="request"/>
 <jsp:useBean id="recentViewProducts" type="java.util.List" scope="request"/>
 <tags:master pageTitle="Product List">
@@ -14,7 +12,21 @@
         <input name="query" value="${param.query}">
         <button>Search</button>
     </form>
-
+    <p>
+         Cart:
+     </p>
+     <p>${cart}</p>
+     <c:if test="${not empty message}">
+          <div class="success">
+              ${message}
+          </div>
+      </c:if>
+      <c:if test="${not empty error}">
+          <div class="error">
+              There was an error updating the cart
+          </div>
+      </c:if>
+    <form id="listForm" method="post" action="${pageContext.servletContext.contextPath}/products">
     <table>
         <thead>
         <tr>
@@ -39,6 +51,7 @@
                     </c:otherwise>
                 </c:choose>
             </td>
+            <td>Quantity</td>
             <td class="price">
                 Price
                 <c:choose>
@@ -59,10 +72,12 @@
                     </c:otherwise>
                 </c:choose>
             </td>
+            <td>
+            </td>
         </tr>
         </thead>
-        <c:forEach var="product" items="${products}">
-            <tr>
+        <c:forEach var="product" items="${products}" varStatus="status">
+            <tr data-product-id="${product.id}">
                 <td>
                     <img class="product-tile" src="${product.imageUrl}" />
                 </td>
@@ -70,6 +85,14 @@
                     <a href="${pageContext.servletContext.contextPath}/products/${product.id}">
                         ${product.description}
                     </a>
+                </td>
+                <td class="quantity">
+                <input name="quantity" value="${not empty quantity and productId == product.id ? quantity : '1'}" >
+                    <c:if test="${not empty error and productId == product.id}">
+                        <div class="error">
+                            ${error}
+                        </div>
+                    </c:if>
                 </td>
                 <td class="price">
                     <a href="#"
@@ -112,9 +135,13 @@
                         <button class="close-modal">Close</button>
                     </div>
                 </td>
+                <td>
+                    <button type="submit">Add to cart</button>
+                </td>
             </tr>
         </c:forEach>
     </table>
+    </form>
     <br />
     <table>
         <tr>
@@ -131,10 +158,53 @@
     </table>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const priceLinks = document.querySelectorAll('.price-link');
-            priceLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("#listForm button[type='submit']").forEach(button => {
+        button.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            let row = this.closest("tr");
+            let productId = row.getAttribute('data-product-id');
+            let quantityInput = row.querySelector("input[name='quantity']");
+            let requestData = { productId: productId, quantity: quantityInput.value };
+
+            fetch(document.getElementById("listForm").action, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestData),
+                redirect: 'manual'
+            })
+            .then(response => {
+                const redirectLocation = response.headers.get('Location');
+                if (redirectLocation) {
+                    window.location.href = redirectLocation;
+                } else {
+                    location.reload();
+                }
+            });
+        });
+    });
+});
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.quantity-input').forEach(input => {
+                input.addEventListener('input', function () {
+                    const productId = this.dataset.productId;
+                    const quantity = this.value;
+                    const button = document.querySelector(`.add-to-cart[data-product-id='${productId}']`);
+                    if (button) {
+                        button.setAttribute("formaction",
+                            `${button.getAttribute("formaction").split('&quantity=')[0]}&quantity=${quantity}`
+                        );
+                    }
+                });
+            });
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('.price-link').forEach(link => {
+                link.addEventListener('click', function (e) {
                     e.preventDefault();
                     const productId = this.dataset.productId;
                     const modal = document.getElementById('modal-' + productId);
@@ -144,10 +214,11 @@
                 });
             });
 
-            const closeButtons = document.querySelectorAll('.close-modal');
-            closeButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    this.parentNode.style.display = 'none';
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.closest(".price-history-modal").style.display = "none";
                 });
             });
         });

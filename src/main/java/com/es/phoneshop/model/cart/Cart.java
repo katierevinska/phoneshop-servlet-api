@@ -6,11 +6,22 @@ import java.util.List;
 
 public class Cart implements Serializable {
     private final List<CartItem> items;
+    private int totalQuantity;
+
     public Cart() {
         items = new ArrayList<>();
     }
+
     public List<CartItem> getItems() {
         return items;
+    }
+
+    public int getTotalQuantity() {
+        return totalQuantity;
+    }
+
+    public void setTotalQuantity(int totalQuantity) {
+        this.totalQuantity = totalQuantity;
     }
 
     @Override

@@ -13,6 +13,11 @@ public class OutOfStockException extends Exception {
         this.availableStock = availableStock;
     }
 
+    @Override
+    public String getMessage() {
+        return "out of stock, need " + requestedStock + " but only " + availableStock + " is available";
+    }
+
     public int getAvailableStock() {
         return availableStock;
     }

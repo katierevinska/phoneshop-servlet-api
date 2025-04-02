@@ -61,7 +61,7 @@ public class DefaultRecentViewProductsService implements RecentViewProductsServi
             while (recentViewProducts.getProducts().size() > limit) {
                 recentViewProducts.getProducts().removeLast();
             }
-           recentViewProducts.setLimit(limit);
+            recentViewProducts.setLimit(limit);
             return true;
         } finally {
             recentViewProductsLock.unlock();

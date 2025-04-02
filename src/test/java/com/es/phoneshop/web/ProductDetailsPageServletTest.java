@@ -131,7 +131,7 @@ class ProductDetailsPageServletTest {
 
         servlet.doPost(request, response);
         verify(response).sendRedirect(contains(
-                "/products/122?error=out+of+stock,+need+10+but+only+5+is+available&productQuantity=5"));
+                "/products/122?error=out of stock, need 10 but only 5 is available&productQuantity=5"));
     }
 
     @Test
