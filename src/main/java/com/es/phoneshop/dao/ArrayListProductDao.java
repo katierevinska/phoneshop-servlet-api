@@ -1,6 +1,9 @@
 package com.es.phoneshop.dao;
 
-import com.es.phoneshop.model.product.*;
+import com.es.phoneshop.model.product.Product;
+import com.es.phoneshop.model.product.SearchResult;
+import com.es.phoneshop.model.product.SortField;
+import com.es.phoneshop.model.product.SortOrder;
 import com.es.phoneshop.utils.ProductSearchUtils;
 
 import java.util.*;
@@ -37,7 +40,7 @@ public class ArrayListProductDao implements ProductDao {
             return products.stream()
                     .filter(product -> id.equals(product.getId()))
                     .findAny()
-                    .map(Product::clone);
+                    .map(Product::new);
         } finally {
             readProductsLock.unlock();
         }

@@ -1,27 +1,33 @@
 package com.es.phoneshop.model.cart;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Currency;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Getter
+@Setter
 public class Cart implements Serializable {
-    private final List<CartItem> items;
-    private int totalQuantity;
+    protected List<CartItem> items = new ArrayList<>();
+    protected int totalQuantity;
+    protected BigDecimal cartPrice;
+    protected Currency currency;
 
     public Cart() {
-        items = new ArrayList<>();
     }
 
-    public List<CartItem> getItems() {
-        return items;
-    }
-
-    public int getTotalQuantity() {
-        return totalQuantity;
-    }
-
-    public void setTotalQuantity(int totalQuantity) {
-        this.totalQuantity = totalQuantity;
+    public Cart(Cart original) {
+        this.totalQuantity = original.totalQuantity;
+        this.cartPrice = original.cartPrice;
+        this.currency = original.currency;
+        this.items = original.items.stream()
+                .map(CartItem::new)
+                .collect(Collectors.toList());
     }
 
     @Override

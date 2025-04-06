@@ -3,6 +3,6 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 
-<a href="${pageContext.servletContext.contextPath}/cart">
-    Cart: ${cart.totalQuantity} items
-</a>
+<tags:master pageTitle="Order not found">
+    <h2>Order not found</h2>
+</tags:master>

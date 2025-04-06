@@ -3,9 +3,13 @@ package com.es.phoneshop.model.product;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Currency;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class Product implements Cloneable, Serializable {
+public class Product implements Serializable {
     private Long id;
     private String code;
     private String description;
@@ -19,10 +23,7 @@ public class Product implements Cloneable, Serializable {
     private Currency currency;
     private int stock;
     private String imageUrl;
-    private transient ArrayList<PriceHistoryInfo> priceHistory;
-
-    public Product() {
-    }
+    private transient List<PriceHistoryInfo> priceHistory;
 
     public Product(
             Long id, String code, String description, BigDecimal price,
@@ -32,8 +33,29 @@ public class Product implements Cloneable, Serializable {
         this.id = id;
     }
 
-    public Product(String code, String description, BigDecimal price,
-                   Currency currency, int stock, String imageUrl
+    public Product(
+            String code, String description, BigDecimal price,
+            Currency currency, int stock, String imageUrl
+    ) {
+        initFiends(code, description, price, currency, stock, imageUrl);
+
+        priceHistory = new ArrayList<>();
+        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
+    }
+
+    public Product(Product original) {
+        initFiends(original.getCode(), original.getDescription(), original.getPrice(),
+                original.getCurrency(), original.getStock(), original.getImageUrl());
+
+        this.id = original.getId();
+        this.priceHistory = original.getPriceHistory().stream()
+                .map(PriceHistoryInfo::new)
+                .collect(Collectors.toList());
+    }
+
+    private void initFiends(
+            String code, String description, BigDecimal price,
+            Currency currency, int stock, String imageUrl
     ) {
         this.code = code;
         this.description = description;
@@ -41,8 +63,6 @@ public class Product implements Cloneable, Serializable {
         this.currency = currency;
         this.stock = stock;
         this.imageUrl = imageUrl;
-        priceHistory = new ArrayList<>();
-        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
     }
 
     public Long getId() {
@@ -74,8 +94,10 @@ public class Product implements Cloneable, Serializable {
     }
 
     public void setPrice(BigDecimal price) {
+        if (this.price != null) {
+            priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
+        }
         this.price = price;
-        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
     }
 
     public Currency getCurrency() {
@@ -83,8 +105,10 @@ public class Product implements Cloneable, Serializable {
     }
 
     public void setCurrency(Currency currency) {
+        if (this.currency != null) {
+            priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
+        }
         this.currency = currency;
-        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
     }
 
     public int getStock() {
@@ -109,16 +133,5 @@ public class Product implements Cloneable, Serializable {
 
     public void setPriceHistory(List<PriceHistoryInfo> priceHistory) {
         this.priceHistory = new ArrayList<>(priceHistory);
-    }
-
-    @Override
-    public Product clone() {
-        priceHistory = new ArrayList<>();
-        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
-        Product product = new Product(
-                this.id, this.code, this.description,
-                this.price, this.currency, this.stock, this.imageUrl);
-        product.setPriceHistory(this.priceHistory.stream().map(PriceHistoryInfo::clone).toList());
-        return product;
     }
 }

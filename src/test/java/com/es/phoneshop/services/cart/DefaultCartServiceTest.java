@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,6 +64,7 @@ class DefaultCartServiceTest {
     void testAddProductToCartWhenProductExists() throws OutOfStockException {
         when(product.getId()).thenReturn(1L);
         when(product.getStock()).thenReturn(10);
+        when(product.getPrice()).thenReturn(BigDecimal.TEN);
 
         CartItem cartItem = new CartItem(product, 2);
         when(cart.getItems()).thenReturn(List.of(cartItem));
@@ -70,6 +72,8 @@ class DefaultCartServiceTest {
 
         cartService.add(cart, 1L, 3);
 
+        verify(cart).setCartPrice(BigDecimal.valueOf(50L));
+        verify(cart).setTotalQuantity(5);
         assertEquals(5, cartItem.getQuantity());
     }
 
@@ -118,6 +122,7 @@ class DefaultCartServiceTest {
     void testUpdateProductToCartWhenProductExists() throws OutOfStockException {
         when(product.getId()).thenReturn(1L);
         when(product.getStock()).thenReturn(10);
+        when(product.getPrice()).thenReturn(BigDecimal.TEN);
 
         CartItem cartItem = new CartItem(product, 2);
         when(cart.getItems()).thenReturn(List.of(cartItem));
@@ -125,6 +130,8 @@ class DefaultCartServiceTest {
 
         cartService.update(cart, 1L, 3);
 
+        verify(cart).setCartPrice(BigDecimal.valueOf(30L));
+        verify(cart).setTotalQuantity(3);
         assertEquals(3, cartItem.getQuantity());
     }
 
@@ -183,11 +190,15 @@ class DefaultCartServiceTest {
     @Test
     void testDeleteProductToCartWhenProductNotExists() {
         when(product.getId()).thenReturn(1L);
+        when(product.getPrice()).thenReturn(BigDecimal.TEN);
+
         Cart cart = new Cart();
         cart.getItems().add(new CartItem(product, 2));
 
         cartService.delete(cart, 2L);
 
         assertEquals(1, cart.getItems().size());
+        assertEquals(2, cart.getTotalQuantity());
+        assertEquals(BigDecimal.valueOf(20L), cart.getCartPrice());
     }
 }

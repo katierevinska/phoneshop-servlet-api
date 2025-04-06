@@ -1,6 +1,5 @@
 package com.es.phoneshop.dao;
 
-import com.es.phoneshop.dao.ArrayListProductDao;
 import com.es.phoneshop.model.product.Product;
 import com.es.phoneshop.model.product.SortField;
 import com.es.phoneshop.model.product.SortOrder;
@@ -116,7 +115,6 @@ class ArrayListProductDaoTest {
     void testGetProductExistId() {
         when(products.stream()).thenReturn(Stream.of(product1, product2));
         when(product1.getId()).thenReturn(1L);
-        when(product1.clone()).thenReturn(product1);
 
         Optional<Product> result = testInstance.getProduct(1L);
 
@@ -173,7 +171,6 @@ class ArrayListProductDaoTest {
 
         when(product1.getId()).thenReturn(1L);
         when(product2.getId()).thenReturn(1L);
-        when(product1.clone()).thenReturn(product1);
 
         testInstance.save(product2);
 
