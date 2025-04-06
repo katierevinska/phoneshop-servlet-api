@@ -21,9 +21,6 @@ public class Product implements Cloneable, Serializable {
     private String imageUrl;
     private transient ArrayList<PriceHistoryInfo> priceHistory;
 
-    public Product() {
-    }
-
     public Product(
             Long id, String code, String description, BigDecimal price,
             Currency currency, int stock, String imageUrl
@@ -74,8 +71,10 @@ public class Product implements Cloneable, Serializable {
     }
 
     public void setPrice(BigDecimal price) {
+        if (this.price != null) {
+            priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
+        }
         this.price = price;
-        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
     }
 
     public Currency getCurrency() {
@@ -83,8 +82,10 @@ public class Product implements Cloneable, Serializable {
     }
 
     public void setCurrency(Currency currency) {
+        if (this.currency != null) {
+            priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
+        }
         this.currency = currency;
-        priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
     }
 
     public int getStock() {
@@ -118,7 +119,9 @@ public class Product implements Cloneable, Serializable {
         Product product = new Product(
                 this.id, this.code, this.description,
                 this.price, this.currency, this.stock, this.imageUrl);
-        product.setPriceHistory(this.priceHistory.stream().map(PriceHistoryInfo::clone).toList());
+        product.setPriceHistory(
+                this.priceHistory.stream().map(PriceHistoryInfo::clone).toList()
+        );
         return product;
     }
 }
