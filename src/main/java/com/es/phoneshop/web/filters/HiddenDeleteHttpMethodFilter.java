@@ -1,11 +1,16 @@
-package com.es.phoneshop.web;
+package com.es.phoneshop.web.filters;
 
-import jakarta.servlet.*;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
+
 import java.io.IOException;
 
-public class HiddenDeleteHttpMethodFilter implements Filter {
+public class HiddenDeleteHttpMethodFilter extends HttpFilter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -25,5 +30,4 @@ public class HiddenDeleteHttpMethodFilter implements Filter {
             chain.doFilter(request, response);
         }
     }
-
 }

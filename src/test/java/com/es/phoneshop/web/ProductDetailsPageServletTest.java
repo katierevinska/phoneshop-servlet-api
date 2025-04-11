@@ -61,7 +61,6 @@ class ProductDetailsPageServletTest {
         when(request.getRequestDispatcher(anyString())).thenReturn(requestDispatcher);
 
         servlet.doGet(request, response);
-        verify(request).setAttribute(eq("message"), any());
         verify(request).getRequestDispatcher("/WEB-INF/pages/notFoundProduct.jsp");
 
         verify(requestDispatcher).forward(request, response);
@@ -77,7 +76,7 @@ class ProductDetailsPageServletTest {
         doNothing().when(recentViewProductsService).updateRecentViewProducts(any(), any());
 
         when(request.getPathInfo()).thenReturn("/122");
-        when(productDao.getProduct(122L)).thenReturn(Optional.of(new Product()));
+        when(productDao.getProduct(122L)).thenReturn(Optional.of(product));
 
         servlet.doGet(request, response);
 
@@ -96,7 +95,6 @@ class ProductDetailsPageServletTest {
 
         servlet.doPost(request, response);
 
-        verify(request).setAttribute(eq("message"), any());
         verify(request).getRequestDispatcher("/WEB-INF/pages/notFoundProduct.jsp");
         verify(requestDispatcher).forward(request, response);
     }

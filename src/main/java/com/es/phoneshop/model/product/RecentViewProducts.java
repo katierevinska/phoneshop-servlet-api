@@ -10,13 +10,13 @@ public class RecentViewProducts implements Serializable {
     private int limit = 3;
     private final LinkedList<Product> products = new LinkedList<>();
 
-    public LinkedList<Product> getProducts() {
+    public synchronized LinkedList<Product> getProducts() {
         return products;
     }
-    public int getLimit() {
+    public synchronized int getLimit() {
         return limit;
     }
-    public void setLimit(int limit) {
+    public synchronized void setLimit(int limit) {
         this.limit = limit;
     }
 }

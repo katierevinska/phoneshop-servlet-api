@@ -12,43 +12,31 @@ import java.util.concurrent.locks.ReentrantLock;
 public class DefaultRecentViewProductsService implements RecentViewProductsService {
     private static final String RECENT_VIEW_PRODUCTS_ATTRIBUTE =
             DefaultRecentViewProductsService.class.getName() + ".RecentViewProducts";
-    private final Lock recentViewProductsLock = new ReentrantLock();
 
     @Override
     public RecentViewProducts getRecentViewProducts(HttpSession httpSession) {
-        recentViewProductsLock.lock();
-        try {
-            RecentViewProducts recentViewProducts = (RecentViewProducts) httpSession.getAttribute(
-                    RECENT_VIEW_PRODUCTS_ATTRIBUTE);
-            if (recentViewProducts == null) {
-                recentViewProducts = new RecentViewProducts();
-                httpSession.setAttribute(RECENT_VIEW_PRODUCTS_ATTRIBUTE, recentViewProducts);
-            }
-            return recentViewProducts;
-        } finally {
-            recentViewProductsLock.unlock();
+        RecentViewProducts recentViewProducts = (RecentViewProducts) httpSession.getAttribute(
+                RECENT_VIEW_PRODUCTS_ATTRIBUTE);
+        if (recentViewProducts == null) {
+            recentViewProducts = new RecentViewProducts();
+            httpSession.setAttribute(RECENT_VIEW_PRODUCTS_ATTRIBUTE, recentViewProducts);
         }
-
+        return recentViewProducts;
     }
 
     @Override
-    public synchronized void updateRecentViewProducts(RecentViewProducts recentViewProducts, Product product) {
-        recentViewProductsLock.lock();
-        try {
-            int limit = recentViewProducts.getLimit();
-            LinkedList<Product> products = recentViewProducts.getProducts();
-            if (limit == 0) {
-                return;
-            }
-            Long newProductId = product.getId();
-            products.removeIf(pr -> newProductId.equals(pr.getId()));
-            while (products.size() >= limit) {
-                products.removeLast();
-            }
-            products.addFirst(product);
-        } finally {
-            recentViewProductsLock.unlock();
+    public void updateRecentViewProducts(RecentViewProducts recentViewProducts, Product product) {
+        int limit = recentViewProducts.getLimit();
+        LinkedList<Product> products = recentViewProducts.getProducts();
+        if (limit == 0) {
+            return;
         }
+        Long newProductId = product.getId();
+        products.removeIf(pr -> newProductId.equals(pr.getId()));
+        while (products.size() >= limit) {
+            products.removeLast();
+        }
+        products.addFirst(product);
     }
 
     @Override
@@ -56,15 +44,12 @@ public class DefaultRecentViewProductsService implements RecentViewProductsServi
         if (limit < 0) {
             return false;
         }
-        recentViewProductsLock.lock();
-        try {
-            while (recentViewProducts.getProducts().size() > limit) {
-                recentViewProducts.getProducts().removeLast();
-            }
-            recentViewProducts.setLimit(limit);
-            return true;
-        } finally {
-            recentViewProductsLock.unlock();
+
+        while (recentViewProducts.getProducts().size() > limit) {
+            recentViewProducts.getProducts().removeLast();
         }
+        recentViewProducts.setLimit(limit);
+        return true;
+
     }
 }

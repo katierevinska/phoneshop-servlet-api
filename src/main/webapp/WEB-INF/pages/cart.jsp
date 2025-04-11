@@ -5,9 +5,21 @@
 
 <tags:master pageTitle="Cart">
  <p>
+     <a href="${pageContext.servletContext.contextPath}/products">
+         Return to products list
+     </a>
+ </p>
+  <p></p>
+  <c:choose>
+    <c:when test="${empty cart.items}">
+         <p>
+              Cart is empty
+         </p>
+    </c:when>
+ <c:otherwise>
+ <p>
      Cart:
  </p>
- <p>${cart}</p>
  <c:if test="${not empty message}">
       <div class="success">
           ${message}
@@ -66,11 +78,26 @@
 
             </tr>
         </c:forEach>
+        <tr>
+            <td></td>
+            <td class="quantity">Total quantity: ${cart.totalQuantity}</td>
+            <td class="price">
+                Total cost:
+                 <p>
+                     <fmt:formatNumber value="${cart.cartPrice}" type="currency"
+                        currencySymbol="${cart.currency.symbol}"/>
+                 </p>
+            </td>
+            <td></td>
+        </tr>
     </table>
     <button type="submit" id="updateCartBtn">Update cart</button>
   </form>
   <form id="deleteCartItem" method="post">
       <input type="hidden" name="method" value="delete">
+  </form>
+  <form action="${pageContext.servletContext.contextPath}/checkout">
+        <button>Checkout</button>
   </form>
    <script>
       document.getElementById('cartForm').addEventListener('submit', function(event) {
@@ -106,4 +133,6 @@
         })
       });
     </script>
+     </c:otherwise>
+   </c:choose>
 </tags:master>

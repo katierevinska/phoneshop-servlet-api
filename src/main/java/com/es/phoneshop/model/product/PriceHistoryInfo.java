@@ -18,7 +18,10 @@ public class PriceHistoryInfo implements Cloneable, Serializable {
 
     @Override
     public PriceHistoryInfo clone() {
-        return new PriceHistoryInfo(new Date(this.dateFrom.getTime()), this.price, this.currency);
+        return new PriceHistoryInfo(
+                new Date(this.dateFrom.getTime()),
+                this.price,
+                this.currency);
     }
 
     public BigDecimal getPrice() {
