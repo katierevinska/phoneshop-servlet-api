@@ -102,8 +102,6 @@ public class ProductDetailsPageServlet extends HttpServlet {
     private void handleProductByIdNotExists(
             HttpServletRequest request, HttpServletResponse response, long id
     ) {
-        request.setAttribute("message", "product not found");
-        request.setAttribute("notFoundId", id);
         response.sendError(404);
         request.getRequestDispatcher("/WEB-INF/pages/notFoundProduct.jsp").forward(request, response);
     }

@@ -42,11 +42,20 @@
 
   <filter>
     <filter-name>hiddenHttpMethodFilter</filter-name>
-    <filter-class>com.es.phoneshop.web.HiddenDeleteHttpMethodFilter</filter-class>
+    <filter-class>com.es.phoneshop.web.filters.HiddenDeleteHttpMethodFilter</filter-class>
   </filter>
   <filter-mapping>
     <filter-name>hiddenHttpMethodFilter</filter-name>
     <url-pattern>/cart/deleteCartItem/*</url-pattern>
+  </filter-mapping>
+
+  <filter>
+    <filter-name>dosFilter</filter-name>
+    <filter-class>com.es.phoneshop.web.filters.DosFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>dosFilter</filter-name>
+    <url-pattern>/*</url-pattern>
   </filter-mapping>
 
   <servlet>
@@ -56,6 +65,24 @@
   <servlet-mapping>
     <servlet-name>MiniCartServlet</servlet-name>
     <url-pattern>/cart/minicart</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>CheckoutPage</servlet-name>
+    <servlet-class>com.es.phoneshop.web.CheckoutPageServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CheckoutPage</servlet-name>
+    <url-pattern>/checkout</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>OrderOverview</servlet-name>
+    <servlet-class>com.es.phoneshop.web.OrderOverviewPageServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>OrderOverview</servlet-name>
+    <url-pattern>/order/overview/*</url-pattern>
   </servlet-mapping>
 
   <error-page>

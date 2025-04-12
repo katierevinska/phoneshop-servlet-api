@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Date;
 
-public class PriceHistoryInfo implements Cloneable, Serializable {
+public class PriceHistoryInfo implements Serializable {
     private Date dateFrom;
     private BigDecimal price;
     private Currency currency;
@@ -16,9 +16,10 @@ public class PriceHistoryInfo implements Cloneable, Serializable {
         this.currency = currency;
     }
 
-    @Override
-    public PriceHistoryInfo clone() {
-        return new PriceHistoryInfo(new Date(this.dateFrom.getTime()), this.price, this.currency);
+    public PriceHistoryInfo(PriceHistoryInfo original) {
+        this.dateFrom = new Date(original.dateFrom.getTime());
+        this.price = original.price;
+        this.currency = original.currency;
     }
 
     public BigDecimal getPrice() {
