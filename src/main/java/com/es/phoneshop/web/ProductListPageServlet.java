@@ -10,6 +10,7 @@ import com.es.phoneshop.services.cart.CartService;
 import com.es.phoneshop.services.cart.DefaultCartService;
 import com.es.phoneshop.services.product.DefaultRecentViewProductsService;
 import com.es.phoneshop.services.product.RecentViewProductsService;
+import com.es.phoneshop.utils.WebUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -40,13 +41,13 @@ public class ProductListPageServlet extends HttpServlet {
     ) throws ServletException, IOException {
         processAllSessionAttributeFromDoPost(request);
 
-        String query = request.getParameter("query");
-        String sortField = request.getParameter("sort");
-        String sortOrder = request.getParameter("order");
-        request.setAttribute("products", productDao.findProducts(query, sortField, sortOrder));
+        String query = request.getParameter(WebUtils.RequestParams.QUERY);
+        String sortField = request.getParameter(WebUtils.RequestParams.SORT);
+        String sortOrder = request.getParameter(WebUtils.RequestParams.ORDER);
+        request.setAttribute(WebUtils.RequestAttributes.PRODUCTS, productDao.findProducts(query, sortField, sortOrder));
         RecentViewProducts recentViewProducts = recentViewProductsService.getRecentViewProducts(request.getSession());
-        request.setAttribute("recentViewProducts", recentViewProducts.getProducts());
-        request.getRequestDispatcher("/WEB-INF/pages/productList.jsp").forward(request, response);
+        request.setAttribute(WebUtils.RequestAttributes.RECENT_VIEW_PRODUCTS, recentViewProducts.getProducts());
+        request.getRequestDispatcher(WebUtils.PagePaths.PRODUCTS_LIST).forward(request, response);
     }
 
     @Override
@@ -75,9 +76,14 @@ public class ProductListPageServlet extends HttpServlet {
         response.setContentType("application/json");
         try {
             int quantity = Integer.valueOf(quantityStr);
+            if (quantity <= 0) {
+                setErrorRedirectParams(request.getSession(),
+                        quantityStr + " is 0 or negative number", productId, quantityStr);
+                return;
+            }
             Cart cart = cartService.getCart(request.getSession());
             cartService.add(cart, productId, quantity);
-            request.getSession().setAttribute("message",
+            request.getSession().setAttribute(WebUtils.SessionAttributes.MESSAGE,
                     quantityStr + " " + product.getDescription() + " added to cart");
         } catch (NumberFormatException e) {
             setErrorRedirectParams(request.getSession(),
@@ -86,7 +92,7 @@ public class ProductListPageServlet extends HttpServlet {
             setErrorRedirectParams(request.getSession(),
                     e.getMessage(), productId, quantityStr);
         } finally {
-            response.sendRedirect(request.getContextPath() + "/products");
+            response.sendRedirect(request.getContextPath() + WebUtils.UrlPaths.PRODUCTS_LIST);
         }
     }
 
@@ -94,17 +100,17 @@ public class ProductListPageServlet extends HttpServlet {
     private void handleProductByIdNotExists(
             HttpServletRequest request, HttpServletResponse response, long id
     ) {
-        request.setAttribute("message", "product not found");
-        request.setAttribute("notFoundId", id);
+        request.setAttribute(WebUtils.RequestAttributes.MESSAGE, "product not found");
+        request.setAttribute(WebUtils.RequestAttributes.NOT_FOUND_ID, id);
         response.sendError(404);
-        request.getRequestDispatcher("/WEB-INF/pages/notFoundProduct.jsp").forward(request, response);
+        request.getRequestDispatcher(WebUtils.PagePaths.NOT_FOUND_PRODUCT).forward(request, response);
     }
 
     private void processAllSessionAttributeFromDoPost(HttpServletRequest request) {
-        processSessionAttributeFromDoPost(request, "message");
-        processSessionAttributeFromDoPost(request, "error");
-        processSessionAttributeFromDoPost(request, "productId");
-        processSessionAttributeFromDoPost(request, "quantity");
+        processSessionAttributeFromDoPost(request, WebUtils.SessionAttributes.MESSAGE);
+        processSessionAttributeFromDoPost(request, WebUtils.SessionAttributes.ERROR);
+        processSessionAttributeFromDoPost(request, WebUtils.SessionAttributes.PRODUCT_ID);
+        processSessionAttributeFromDoPost(request, WebUtils.SessionAttributes.QUANTITY);
     }
 
     private void processSessionAttributeFromDoPost(HttpServletRequest request, String attributeName) {
@@ -116,9 +122,9 @@ public class ProductListPageServlet extends HttpServlet {
     }
 
     private void setErrorRedirectParams(HttpSession session, String errorMessage, Long productId, String quantityStr) {
-        session.setAttribute("error", errorMessage);
-        session.setAttribute("productId", productId);
-        session.setAttribute("quantity", quantityStr);
+        session.setAttribute(WebUtils.SessionAttributes.ERROR, errorMessage);
+        session.setAttribute(WebUtils.SessionAttributes.PRODUCT_ID, productId);
+        session.setAttribute(WebUtils.SessionAttributes.QUANTITY, quantityStr);
     }
 
     public void setProductDao(ProductDao productDao) {

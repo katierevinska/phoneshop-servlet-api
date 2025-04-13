@@ -48,6 +48,11 @@ public class Product implements Serializable {
                 original.getCurrency(), original.getStock(), original.getImageUrl());
 
         this.id = original.getId();
+        if (original.getPriceHistory() == null) {
+            this.priceHistory = new ArrayList<>();
+            priceHistory.add(new PriceHistoryInfo(Date.from(Instant.now()), price, currency));
+            return;
+        }
         this.priceHistory = original.getPriceHistory().stream()
                 .map(PriceHistoryInfo::new)
                 .collect(Collectors.toList());

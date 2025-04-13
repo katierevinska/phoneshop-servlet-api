@@ -10,6 +10,7 @@ import com.es.phoneshop.services.cart.CartService;
 import com.es.phoneshop.services.cart.DefaultCartService;
 import com.es.phoneshop.services.product.DefaultRecentViewProductsService;
 import com.es.phoneshop.services.product.RecentViewProductsService;
+import com.es.phoneshop.utils.WebUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,7 +43,7 @@ public class ProductDetailsPageServlet extends HttpServlet {
         Optional<Product> productOptional = productDao.getProduct(id);
         productOptional.ifPresentOrElse(
                 product -> handleGetExistsProduct(request, response, product),
-                () -> handleProductByIdNotExists(request, response, id)
+                () -> handleProductByIdNotExists(request, response)
         );
     }
 
@@ -54,7 +55,7 @@ public class ProductDetailsPageServlet extends HttpServlet {
         Optional<Product> productOptional = productDao.getProduct(id);
         productOptional.ifPresentOrElse(
                 product -> handlePostExistsProduct(request, response, product),
-                () -> handleProductByIdNotExists(request, response, id)
+                () -> handleProductByIdNotExists(request, response)
         );
     }
 
@@ -65,45 +66,49 @@ public class ProductDetailsPageServlet extends HttpServlet {
         RecentViewProducts recentViewProducts = recentViewProductsService.getRecentViewProducts(request.getSession());
         recentViewProductsService.updateRecentViewProducts(recentViewProducts, product);
 
-        request.setAttribute("product", product);
-        request.setAttribute("cart", cartService.getCart(request.getSession()));
-        request.getRequestDispatcher("/WEB-INF/pages/productDetails.jsp").forward(request, response);
+        request.setAttribute(WebUtils.RequestAttributes.PRODUCT, product);
+        request.setAttribute(WebUtils.RequestAttributes.CART, cartService.getCart(request.getSession()));
+        request.getRequestDispatcher(WebUtils.PagePaths.PRODUCT_DETAILS).forward(request, response);
     }
 
     @SneakyThrows
     private void handlePostExistsProduct(
             HttpServletRequest request, HttpServletResponse response, Product product
     ) {
-        String quantityStr = request.getParameter("quantity");
+        String quantityStr = request.getParameter(WebUtils.RequestParams.QUANTITY);
         Long productId = product.getId();
         try {
             NumberFormat numberFormat = NumberFormat.getInstance(request.getLocale());
             int quantity = numberFormat.parse(quantityStr).intValue();
             quantityStr = String.valueOf(quantity);
-
+            if (quantity <= 0) {
+                response.sendRedirect(request.getContextPath() + WebUtils.UrlPaths.PRODUCT_DETAILS + productId
+                        + "?error=" + quantityStr + "+is+0+or+negative+number&productQuantity=" + quantityStr);
+                return;
+            }
             Cart cart = cartService.getCart(request.getSession());
             cartService.add(cart, productId, quantity);
         } catch (ParseException e) {
-            response.sendRedirect(request.getContextPath() + "/products/" + productId + "?error="
-                    + quantityStr + "+not+a+number&productQuantity=" + quantityStr);
+            response.sendRedirect(request.getContextPath() + WebUtils.UrlPaths.PRODUCT_DETAILS + productId
+                    + "?error=" + quantityStr + "+not+a+number&productQuantity=" + quantityStr);
 
             return;
         } catch (OutOfStockException e) {
-            response.sendRedirect(request.getContextPath() + "/products/" + productId + "?error="
-                    + e.getMessage() + "&productQuantity=" + quantityStr);
+            response.sendRedirect(request.getContextPath() + WebUtils.UrlPaths.PRODUCT_DETAILS + productId
+                    + "?error=" + e.getMessage() + "&productQuantity=" + quantityStr);
 
             return;
         }
-        response.sendRedirect(request.getContextPath() + "/products/" + productId + "?message="
+        response.sendRedirect(request.getContextPath() + WebUtils.UrlPaths.PRODUCT_DETAILS + productId + "?message="
                 + quantityStr + "+" + product.getDescription() + "+added+to+cart&productQuantity=" + quantityStr);
     }
 
     @SneakyThrows
     private void handleProductByIdNotExists(
-            HttpServletRequest request, HttpServletResponse response, long id
+            HttpServletRequest request, HttpServletResponse response
     ) {
         response.sendError(404);
-        request.getRequestDispatcher("/WEB-INF/pages/notFoundProduct.jsp").forward(request, response);
+        request.getRequestDispatcher(WebUtils.PagePaths.NOT_FOUND_PRODUCT).forward(request, response);
     }
 
     public void setProductDao(ProductDao productDao) {

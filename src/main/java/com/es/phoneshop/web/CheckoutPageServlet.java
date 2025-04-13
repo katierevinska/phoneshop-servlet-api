@@ -8,6 +8,7 @@ import com.es.phoneshop.services.cart.DefaultCartService;
 import com.es.phoneshop.services.order.DefaultOrderService;
 import com.es.phoneshop.services.order.OrderService;
 import com.es.phoneshop.utils.FieldValidation;
+import com.es.phoneshop.utils.WebUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,10 +36,11 @@ public class CheckoutPageServlet extends HttpServlet {
             HttpServletRequest request, HttpServletResponse response
     ) throws ServletException, IOException {
         Cart cart = cartService.getCart(request.getSession());
-        request.setAttribute("order", orderService.constructOrderByCart(cart));
-        request.setAttribute("paymentMethods", orderService.getPaymentMethods());
 
-        request.getRequestDispatcher("/WEB-INF/pages/checkout.jsp").forward(request, response);
+        request.setAttribute(WebUtils.RequestAttributes.ORDER, orderService.constructOrderByCart(cart));
+        request.setAttribute(WebUtils.RequestAttributes.PAYMENT_METHODS, orderService.getPaymentMethods());
+
+        request.getRequestDispatcher(WebUtils.PagePaths.CHECKOUT).forward(request, response);
     }
 
     @Override
@@ -47,43 +49,46 @@ public class CheckoutPageServlet extends HttpServlet {
     ) throws ServletException, IOException {
         Cart cart = cartService.getCart(request.getSession());
         Order order = orderService.constructOrderByCart(cart);
-        request.setAttribute("order", orderService.constructOrderByCart(cart));
+        request.setAttribute(WebUtils.RequestAttributes.ORDER, orderService.constructOrderByCart(cart));
         Map<String, String> errorMessageByProductInCart = new HashMap<>();
         processOrderFields(request, errorMessageByProductInCart, order);
 
         if (errorMessageByProductInCart.isEmpty()) {
             UUID orderUUID = orderService.placeOrder(order);
             cartService.clearCart(cart);
-            response.sendRedirect(request.getContextPath() + "/order/overview/" + orderUUID);
+            response.sendRedirect(request.getContextPath() + WebUtils.UrlPaths.ORDER_OVERVIEW + orderUUID);
         } else {
-            request.setAttribute("paymentMethods", orderService.getPaymentMethods());
-            request.setAttribute("errors", errorMessageByProductInCart);
-            request.getRequestDispatcher("/WEB-INF/pages/checkout.jsp").forward(request, response);
+            request.setAttribute(WebUtils.RequestAttributes.PAYMENT_METHODS, orderService.getPaymentMethods());
+            request.setAttribute(WebUtils.RequestAttributes.ERRORS, errorMessageByProductInCart);
+            request.getRequestDispatcher(WebUtils.PagePaths.CHECKOUT).forward(request, response);
         }
     }
 
     private void processOrderFields(HttpServletRequest request, Map<String, String> errors, Order order) {
-        String firstName = request.getParameter("firstName");
-        String lastName = request.getParameter("lastName");
-        String deliveryAddress = request.getParameter("deliveryAddress");
-        String phone = request.getParameter("phone");
-        String paymentMethodValue = request.getParameter("paymentMethod");
-        String deliveryDateStr = request.getParameter("deliveryDate");
+        String firstName = request.getParameter(WebUtils.RequestParams.FIRST_NAME);
+        String lastName = request.getParameter(WebUtils.RequestParams.LAST_NAME);
+        String deliveryAddress = request.getParameter(WebUtils.RequestParams.DELIVERY_ADDRESS);
+        String phone = request.getParameter(WebUtils.RequestParams.PHONE);
+        String paymentMethodValue = request.getParameter(WebUtils.RequestParams.PAYMENT_METHOD);
+        String deliveryDateStr = request.getParameter(WebUtils.RequestParams.DELIVERY_DATE);
 
         FieldValidation.validateName(firstName)
-                .ifPresentOrElse(error -> errors.put("firstName", error), () -> order.setFirstName(firstName));
+                .ifPresentOrElse(error -> errors.put(WebUtils.RequestParams.FIRST_NAME, error),
+                        () -> order.setFirstName(firstName));
         FieldValidation.validateName(lastName)
-                .ifPresentOrElse(error -> errors.put("lastName", error), () -> order.setLastName(lastName));
+                .ifPresentOrElse(error -> errors.put(WebUtils.RequestParams.LAST_NAME, error),
+                        () -> order.setLastName(lastName));
         FieldValidation.validatePhone(phone)
-                .ifPresentOrElse(error -> errors.put("phone", error), () -> order.setPhone(phone));
+                .ifPresentOrElse(error -> errors.put(WebUtils.RequestParams.PHONE, error),
+                        () -> order.setPhone(phone));
         FieldValidation.validateAddress(deliveryAddress)
-                .ifPresentOrElse(error -> errors.put("deliveryAddress", error),
+                .ifPresentOrElse(error -> errors.put(WebUtils.RequestParams.DELIVERY_ADDRESS, error),
                         () -> order.setDeliveryAddress(deliveryAddress));
         FieldValidation.validateNotEmptyString(paymentMethodValue)
-                .ifPresentOrElse(error -> errors.put("paymentMethod", error),
+                .ifPresentOrElse(error -> errors.put(WebUtils.RequestParams.PAYMENT_METHOD, error),
                         () -> order.setPaymentMethod(PaymentMethod.valueOf(paymentMethodValue)));
         FieldValidation.validateDateInFuture(deliveryDateStr)
-                .ifPresentOrElse(error -> errors.put("deliveryDate", error),
+                .ifPresentOrElse(error -> errors.put(WebUtils.RequestParams.DELIVERY_DATE, error),
                         () -> order.setDeliveryDate(LocalDate.parse(deliveryDateStr)));
     }
 

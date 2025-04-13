@@ -1,6 +1,8 @@
 package com.es.phoneshop.model.product;
 
-public enum SortOrder {
+import java.io.Serializable;
+
+public enum SortOrder implements Serializable {
     ASC,
     DESC
 }

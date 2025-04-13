@@ -20,6 +20,7 @@
  <p>
      Cart:
  </p>
+ <p>${cart}</p>
  <c:if test="${not empty message}">
       <div class="success">
           ${message}
