@@ -4,6 +4,7 @@ import com.es.phoneshop.model.cart.Cart;
 import com.es.phoneshop.model.exceptions.OutOfStockException;
 import com.es.phoneshop.services.cart.CartService;
 import com.es.phoneshop.services.cart.DefaultCartService;
+import com.es.phoneshop.utils.WebUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -28,12 +29,12 @@ public class CartPageServlet extends HttpServlet {
     protected void doGet(
             HttpServletRequest request, HttpServletResponse response
     ) throws ServletException, IOException {
-        processSessionAttributeFromDoPost(request, "errors");
-        processSessionAttributeFromDoPost(request, "message");
+        processSessionAttributeFromDoPost(request, WebUtils.SessionAttributes.ERRORS);
+        processSessionAttributeFromDoPost(request, WebUtils.SessionAttributes.MESSAGE);
 
         Cart cart = cartService.getCart(request.getSession());
-        request.setAttribute("cart", cart);
-        request.getRequestDispatcher("/WEB-INF/pages/cart.jsp").forward(request, response);
+        request.setAttribute(WebUtils.RequestAttributes.CART, cart);
+        request.getRequestDispatcher(WebUtils.PagePaths.CART).forward(request, response);
     }
 
     @Override
@@ -42,7 +43,8 @@ public class CartPageServlet extends HttpServlet {
         Long id = Long.parseLong(idStr);
         Cart cart = cartService.getCart(request.getSession());
         cartService.delete(cart, id);
-        response.sendRedirect(request.getContextPath() + "/cart?message=product+was+deleted+from+cart");
+        response.sendRedirect(request.getContextPath() + WebUtils.UrlPaths.CART
+                + "?message=product+was+deleted+from+cart");
     }
 
     @Override
@@ -60,11 +62,11 @@ public class CartPageServlet extends HttpServlet {
 
         response.setContentType("application/json");
         if (errorMessageByProductInCart.isEmpty()) {
-            request.getSession().setAttribute("message", "cart was updated");
+            request.getSession().setAttribute(WebUtils.SessionAttributes.MESSAGE, "cart was updated");
         } else {
-            request.getSession().setAttribute("errors", errorMessageByProductInCart);
+            request.getSession().setAttribute(WebUtils.SessionAttributes.ERRORS, errorMessageByProductInCart);
         }
-        response.sendRedirect(request.getContextPath() + "/cart");
+        response.sendRedirect(request.getContextPath() + WebUtils.UrlPaths.CART);
     }
 
     private void processSessionAttributeFromDoPost(HttpServletRequest request, String attribute) {
@@ -73,10 +75,17 @@ public class CartPageServlet extends HttpServlet {
             request.getSession().setAttribute(attribute, null);
         }
     }
-    private void processCartItem(Cart cart, UprateCartItemInfo cartItem, Map<Long, String> errorMessageByProductInCart) {
+
+    private void processCartItem(
+            Cart cart, UprateCartItemInfo cartItem, Map<Long, String> errorMessageByProductInCart
+    ) {
         Long productId = Long.parseLong(cartItem.productId);
         try {
             int quantity = Integer.parseInt(cartItem.quantity);
+            if (quantity <= 0) {
+                errorMessageByProductInCart.put(productId, cartItem.quantity + " is 0 or a negative number");
+                return;
+            }
             cartService.update(cart, productId, quantity);
         } catch (NumberFormatException e) {
             errorMessageByProductInCart.put(productId, cartItem.quantity + " not a number");

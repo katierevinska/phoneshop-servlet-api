@@ -3,6 +3,7 @@ package com.es.phoneshop.web;
 import com.es.phoneshop.model.order.Order;
 import com.es.phoneshop.services.order.DefaultOrderService;
 import com.es.phoneshop.services.order.OrderService;
+import com.es.phoneshop.utils.WebUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +31,7 @@ public class OrderOverviewPageServlet extends HttpServlet {
         Optional<Order> orderOptional = orderService.getOrder(UUID.fromString(uuid));
         orderOptional.ifPresentOrElse(
                 order -> handleProductByIdExists(request, response, order),
-                () -> handleProductByIdNotExists(request, response, uuid)
+                () -> handleProductByIdNotExists(request, response)
         );
     }
 
@@ -38,16 +39,16 @@ public class OrderOverviewPageServlet extends HttpServlet {
     private void handleProductByIdExists(
             HttpServletRequest request, HttpServletResponse response, Order order
     ) {
-        request.setAttribute("order", order);
-        request.getRequestDispatcher("/WEB-INF/pages/orderOverview.jsp").forward(request, response);
+        request.setAttribute(WebUtils.RequestAttributes.ORDER, order);
+        request.getRequestDispatcher(WebUtils.PagePaths.ORDER_OVERVIEW).forward(request, response);
     }
 
     @SneakyThrows
     private void handleProductByIdNotExists(
-            HttpServletRequest request, HttpServletResponse response, String uuid
+            HttpServletRequest request, HttpServletResponse response
     ) {
         response.sendError(404);
-        request.getRequestDispatcher("/WEB-INF/pages/notFoundOrder.jsp").forward(request, response);
+        request.getRequestDispatcher(WebUtils.PagePaths.NOT_FOUND_ORDER).forward(request, response);
     }
 
     public void setOrderService(OrderService orderService) {
