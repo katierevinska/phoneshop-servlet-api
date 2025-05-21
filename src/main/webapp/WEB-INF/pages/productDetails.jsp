@@ -4,15 +4,6 @@
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 
 <tags:master pageTitle="Product Details">
-<p>
-    Cart:
-</p>
-<p>${cart}</p>
- <p>
-     <a href="${pageContext.servletContext.contextPath}/products">
-         Return to products list
-     </a>
- </p>
  <c:if test="${not empty param.message}">
     <div class="success">
         ${param.message}

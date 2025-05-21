@@ -7,11 +7,6 @@
 <jsp:useBean id="paymentMethods" type="java.util.List" scope="request"/>
 
 <tags:master pageTitle="Checkout">
- <p>
-     <a href="${pageContext.servletContext.contextPath}/products">
-         Return to products list
-     </a>
- </p>
  <h2>
      Cart:
  </h2>
