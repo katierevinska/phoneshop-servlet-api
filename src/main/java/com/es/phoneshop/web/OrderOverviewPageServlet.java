@@ -30,13 +30,13 @@ public class OrderOverviewPageServlet extends HttpServlet {
         String uuid = request.getPathInfo().substring(1);
         Optional<Order> orderOptional = orderService.getOrder(UUID.fromString(uuid));
         orderOptional.ifPresentOrElse(
-                order -> handleProductByIdExists(request, response, order),
-                () -> handleProductByIdNotExists(request, response)
+                order -> handleOrderByIdExists(request, response, order),
+                () -> handleOrderByIdNotExists(request, response)
         );
     }
 
     @SneakyThrows
-    private void handleProductByIdExists(
+    private void handleOrderByIdExists(
             HttpServletRequest request, HttpServletResponse response, Order order
     ) {
         request.setAttribute(WebUtils.RequestAttributes.ORDER, order);
@@ -44,7 +44,7 @@ public class OrderOverviewPageServlet extends HttpServlet {
     }
 
     @SneakyThrows
-    private void handleProductByIdNotExists(
+    private void handleOrderByIdNotExists(
             HttpServletRequest request, HttpServletResponse response
     ) {
         response.sendError(404);
