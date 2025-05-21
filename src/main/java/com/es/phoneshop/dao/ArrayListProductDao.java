@@ -6,10 +6,13 @@ import com.es.phoneshop.model.product.SortField;
 import com.es.phoneshop.model.product.SortOrder;
 import com.es.phoneshop.utils.ProductSearchUtils;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ArrayListProductDao implements ProductDao {
     private static final ArrayListProductDao instance = new ArrayListProductDao();
@@ -41,6 +44,49 @@ public class ArrayListProductDao implements ProductDao {
                     .filter(product -> id.equals(product.getId()))
                     .findAny()
                     .map(Product::new);
+        } finally {
+            readProductsLock.unlock();
+        }
+    }
+
+    @Override
+    public List<Product> findProductsAdvancedSearch(String query, String searchMode, Integer minPrice, Integer maxPrice) {
+        readProductsLock.lock();
+        try {
+            Stream<Product> productStream = products.stream()
+                    .filter(product -> product.getPrice() != null && product.getStock() > 0);
+
+            final String trimmedQuery = (query != null) ? query.trim().toLowerCase() : "";
+            if (!trimmedQuery.isEmpty()) {
+                productStream = productStream.filter(product -> {
+                    if (product.getDescription() == null || product.getDescription().trim().isEmpty()) {
+                        return false;
+                    }
+                    String descriptionLower = product.getDescription().toLowerCase();
+                    List<String> queryWords = Arrays.stream(trimmedQuery.split("\\s+"))
+                            .filter(qw -> !qw.isEmpty())
+                            .collect(Collectors.toList());
+                    if (queryWords.isEmpty()) return true;
+
+                    if ("all".equals(searchMode)) {
+                        return queryWords.stream().allMatch(descriptionLower::contains);
+                    } else {
+                        return queryWords.stream().anyMatch(descriptionLower::contains);
+                    }
+                });
+            }
+
+            if (minPrice != null) {
+                BigDecimal minPriceDecimal = BigDecimal.valueOf(minPrice);
+                productStream = productStream.filter(product -> product.getPrice().compareTo(minPriceDecimal) >= 0);
+            }
+
+            if (maxPrice != null) {
+                BigDecimal maxPriceDecimal = BigDecimal.valueOf(maxPrice);
+                productStream = productStream.filter(product -> product.getPrice().compareTo(maxPriceDecimal) <= 0);
+            }
+
+            return productStream.collect(Collectors.toList());
         } finally {
             readProductsLock.unlock();
         }

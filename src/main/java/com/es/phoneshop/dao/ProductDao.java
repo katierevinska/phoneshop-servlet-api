@@ -13,4 +13,6 @@ public interface ProductDao {
     Long save(Product product);
     void delete(Long id);
     void saveAll(List<Product> products);
+
+    List<Product> findProductsAdvancedSearch(String query, String searchMode, Integer minPrice, Integer maxPrice);
 }

@@ -8,6 +8,7 @@ public final class WebUtils {
     public static final class PagePaths {
         public static final String CHECKOUT = "/WEB-INF/pages/checkout.jsp";
         public static final String PRODUCTS_LIST = "/WEB-INF/pages/productList.jsp";
+        public static final String ADVANCED_SEARCH = "/WEB-INF/pages/advancedSearch.jsp";
         public static final String NOT_FOUND_PRODUCT = "/WEB-INF/pages/notFoundProduct.jsp";
         public static final String CART = "/WEB-INF/pages/cart.jsp";
         public static final String MINICART = "/WEB-INF/pages/minicart.jsp";
@@ -51,6 +52,7 @@ public final class WebUtils {
         public static final String DELIVERY_ADDRESS = "deliveryAddress";
         public static final String DELIVERY_DATE = "deliveryDate";
         public static final String PAYMENT_METHOD = "paymentMethod";
+        public static final String SEARCH_MODE = "searchMode";
         public static final String PHONE = "phone";
         public static final String QUANTITY = "quantity";
         public static final String QUERY = "query";

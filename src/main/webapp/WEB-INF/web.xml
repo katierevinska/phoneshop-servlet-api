@@ -85,6 +85,15 @@
     <url-pattern>/order/overview/*</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>advancedSearch</servlet-name>
+    <servlet-class>com.es.phoneshop.web.AdvancedSearchServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>advancedSearch</servlet-name>
+    <url-pattern>/advancedSearch</url-pattern>
+  </servlet-mapping>
+
   <error-page>
     <location>/WEB-INF/pages/generalError.jsp</location>
     <error-code>500</error-code>
