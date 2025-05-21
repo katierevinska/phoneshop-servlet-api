@@ -15,6 +15,11 @@
     </a>
     <jsp:include page="/cart/minicart"/>
   </header>
+   <p>
+       <a href="${pageContext.servletContext.contextPath}/products">
+           Return to products list
+       </a>
+   </p>
   <main>
     <jsp:doBody/>
   </main>

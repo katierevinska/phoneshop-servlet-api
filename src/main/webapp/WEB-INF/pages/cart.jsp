@@ -4,11 +4,6 @@
 <%@ taglib prefix="tags" tagdir="/WEB-INF/tags" %>
 
 <tags:master pageTitle="Cart">
- <p>
-     <a href="${pageContext.servletContext.contextPath}/products">
-         Return to products list
-     </a>
- </p>
   <p></p>
   <c:choose>
     <c:when test="${empty cart.items}">
@@ -17,10 +12,6 @@
          </p>
     </c:when>
  <c:otherwise>
- <p>
-     Cart:
- </p>
- <p>${cart}</p>
  <c:if test="${not empty message}">
       <div class="success">
           ${message}

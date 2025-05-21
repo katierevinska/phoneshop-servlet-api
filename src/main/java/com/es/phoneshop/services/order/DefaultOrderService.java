@@ -28,6 +28,7 @@ public class DefaultOrderService implements OrderService {
         BigDecimal deliveryCost = calculateDeliveryCost();
         order.setCartPrice(cart.getCartPrice());
         order.setDeliveryCosts(deliveryCost);
+        order.setTotalQuantity(cart.getTotalQuantity());
         order.setOrderTotalPrice(cart.getCartPrice().add(deliveryCost));
 
         return order;

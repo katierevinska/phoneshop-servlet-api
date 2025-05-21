@@ -7,11 +7,6 @@
 
 <tags:master pageTitle="Order overview">
  <p>
-     <a href="${pageContext.servletContext.contextPath}/products">
-         Return to products list
-     </a>
- </p>
- <p>
      Cart:
  </p>
     <table>
